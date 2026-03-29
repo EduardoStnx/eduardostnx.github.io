@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motoboy Pro</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" href="icon-192.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --bg2:#0f172a;
+      --card:#111c31;
+      --card2:#15223b;
+      --line:#253656;
+      --text:#eef4ff;
+      --muted:#9fb0d1;
+      --green:#22c55e;
+      --red:#ef4444;
+      --yellow:#f59e0b;
+      --blue:#3b82f6;
+      --cyan:#06b6d4;
+      --purple:#8b5cf6;
+      --radius:18px;
+      --shadow:0 12px 30px rgba(0,0,0,.28);
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#08101d,#0b1220 25%,#0c1423 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    body{padding:14px 14px 92px}
+    h1,h2,h3,p{margin:0}
+    button,input,select,textarea{font:inherit}
+    .hidden{display:none !important}
+
+    .app{max-width:760px;margin:0 auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:grid;place-items:center;font-weight:800;color:#fff;box-shadow:var(--shadow)}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .btn-top{padding:10px 12px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:#fff;border-radius:14px;cursor:pointer}
+
+    .page{display:none;animation:fade .18s ease}
+    .page.active{display:block}
+    @keyframes fade{from{opacity:.75;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+    .tab-btn,.nav-btn{
+      padding:12px 8px;border-radius:14px;border:1px solid var(--line);
+      background:var(--card);color:var(--muted);font-weight:800;cursor:pointer
+    }
+    .tab-btn.active,.nav-btn.active{background:linear-gradient(180deg,#1a2a48,#13233c);color:#fff;border-color:#31517d}
+
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow)
+    }
+
+    .card-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .small{font-size:13px}
+
+    .segment{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+      background:#0d1627;padding:6px;border-radius:16px;border:1px solid var(--line);margin-bottom:12px
+    }
+    .segment button{
+      padding:10px 8px;border:none;border-radius:12px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer
+    }
+    .segment button.active{background:linear-gradient(180deg,#203556,#182a46);color:#fff}
+
+    .main-balance{position:relative;overflow:hidden}
+    .balance-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .balance-label{color:var(--muted);font-size:12px;margin-bottom:6px}
+    .gross-line{font-size:30px;font-weight:900;letter-spacing:.3px}
+    .expense-inline{display:block;margin-top:4px;color:#ff8f8f;font-weight:800}
+    .net-pill{
+      margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;font-weight:800
+    }
+    .net-positive{background:rgba(34,197,94,.15);color:#9bf2b6;border:1px solid rgba(34,197,94,.25)}
+    .net-negative{background:rgba(239,68,68,.15);color:#ffabab;border:1px solid rgba(239,68,68,.25)}
+    .hide-btn{padding:10px 12px;border:none;border-radius:12px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat{padding:12px;border-radius:16px;background:#0e182b;border:1px solid var(--line)}
+    .stat .value{font-size:20px;font-weight:900;margin-top:4px}
+
+    .field{margin-bottom:10px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input,.field select,.field textarea{
+      width:100%;padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:#091220;color:#fff;outline:none
+    }
+    .field textarea{min-height:100px;resize:vertical}
+
+    .action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .big-btn{
+      padding:14px;border:none;border-radius:16px;color:#fff;font-weight:900;cursor:pointer
+    }
+    .pix{background:linear-gradient(180deg,#1c9fb8,#0f7b8f)}
+    .cash{background:linear-gradient(180deg,#28c76f,#1e9d56)}
+    .warn{background:linear-gradient(180deg,#f59e0b,#d97706)}
+    .danger{background:linear-gradient(180deg,#ef4444,#b91c1c)}
+    .blue{background:linear-gradient(180deg,#3b82f6,#1d4ed8)}
+    .purple{background:linear-gradient(180deg,#8b5cf6,#6d28d9)}
+    .ghost-btn{
+      padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:#fff;cursor:pointer
+    }
+
+    .goals{display:grid;gap:10px}
+    .goal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+    .goal-name{font-size:14px;font-weight:800}
+    .goal-value{font-size:12px;color:var(--muted)}
+    .bar{height:12px;background:#0c1526;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+    .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px}
+
+    .summary-item{padding:12px;border-radius:16px;background:#0d1627;border:1px solid var(--line)}
+    .summary-item .n{font-size:20px;font-weight:900;margin-top:5px}
+
+    .list{display:grid;gap:10px}
+    .entry{padding:12px;border-radius:16px;background:#0c1628;border:1px solid var(--line)}
+    .entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+    .entry-title{font-weight:900}
+    .entry-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    .entry-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .mini-btn{padding:9px 10px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;background:#223250}
+    .mini-delete{background:#7f1d1d}
+    .mini-receive{background:#0f766e}
+    .mini-edit{background:#1d4ed8}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
+      font-size:12px;font-weight:800;border:1px solid transparent
+    }
+    .b-pix{background:rgba(6,182,212,.15);color:#86eaf7;border-color:rgba(6,182,212,.25)}
+    .b-cash{background:rgba(34,197,94,.15);color:#9cf3b6;border-color:rgba(34,197,94,.25)}
+    .b-pending{background:rgba(245,158,11,.15);color:#ffd28b;border-color:rgba(245,158,11,.25)}
+    .b-expense{background:rgba(239,68,68,.15);color:#ffadad;border-color:rgba(239,68,68,.25)}
+
+    .close-panel{display:grid;gap:10px}
+    .close-card{padding:12px;border-radius:16px;border:1px solid var(--line);background:#0e182d}
+    .close-card.closed{border-color:#1f7a44;background:linear-gradient(180deg,#0f2419,#112819)}
+    .close-card.locked{border-color:#7a5f1f;background:linear-gradient(180deg,#2a2110,#241b10)}
+
+    .history-item{padding:12px;border-radius:16px;background:#0d1627;border:1px solid var(--line);margin-bottom:10px}
+    .history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+    .history-values{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .history-values div{padding:10px;border-radius:12px;background:#101b31}
+
+    .pill-switch{display:flex;gap:8px;flex-wrap:wrap}
+    .pill-switch button{
+      padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#0d1628;color:var(--muted);cursor:pointer;font-weight:800
+    }
+    .pill-switch button.active{background:#1a3050;color:#fff}
+
+    .empty{padding:18px;border:1px dashed #324766;border-radius:16px;color:var(--muted);text-align:center}
+    .positive{color:#9bf2b6}
+    .negative{color:#ffabab}
+    .warning{color:#ffd28b}
+
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;padding:10px 12px 14px;
+      background:linear-gradient(180deg,rgba(9,16,29,0),rgba(9,16,29,.95) 35%,#09101d)
+    }
+    .bottom-inner{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+
+    @media (max-width:600px){
+      .grid-4,.grid-3,.history-values{grid-template-columns:1fr 1fr}
+      .grid-2,.action-grid{grid-template-columns:1fr}
+      .tabs{grid-template-columns:repeat(2,1fr)}
+      .gross-line{font-size:26px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">MP</div>
+        <div>
+          <h2>Motoboy Pro</h2>
+          <small>Controle completo de entregas</small>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-top" onclick="exportBackup()">Backup</button>
+        <button class="btn-top" onclick="importBackup()">Importar</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-page="home" onclick="showPage('home')">Home</button>
+      <button class="tab-btn" data-page="lancamentos" onclick="showPage('lancamentos')">Lançamentos</button>
+      <button class="tab-btn" data-page="historico" onclick="showPage('historico')">Histórico</button>
+      <button class="tab-btn" data-page="config" onclick="showPage('config')">Metas</button>
+    </div>
+
+    <section id="home" class="page active">
+      <div class="segment">
+        <button class="active" id="segDay" onclick="setHomeFilter('day', this)">Dia</button>
+        <button id="segWeek" onclick="setHomeFilter('week', this)">Semana</button>
+        <button id="segMonth" onclick="setHomeFilter('month', this)">Mês</button>
+      </div>
+
+      <div class="card main-balance">
+        <div class="balance-top">
+          <div>
+            <div class="balance-label" id="balanceLabel">Resumo do dia</div>
+            <div class="gross-line" id="balanceGross">R$ 0,00</div>
+            <span class="expense-inline" id="balanceExpense">R$ 0,00</span>
+            <div class="net-pill net-positive" id="balanceNet">Líquido R$ 0,00</div>
+          </div>
+          <button class="hide-btn" onclick="toggleHideValues()" id="hideValuesBtn">Ocultar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Metas do mês</h3>
+          <span class="muted tiny" id="homeMonthLabel">Mês atual</span>
+        </div>
+        <div class="goals" id="goalsWrap"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="ghost-btn" onclick="showPage('config')">+ adicionar meta</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Gráfico</h3>
+          <span class="muted tiny" id="chartLabel">Últimos 7 dias</span>
+        </div>
+        <canvas id="mainChart" height="130"></canvas>
+      </div>
+
+      <div class="grid-4">
+        <div class="stat"><div class="muted tiny">Entregas</div><div class="value" id="statDeliveries">0</div></div>
+        <div class="stat"><div class="muted tiny">Pendentes / ficha</div><div class="value" id="statPending">R$ 0,00</div></div>
+        <div class="stat"><div class="muted tiny">Moto separada</div><div class="value" id="statMoto">R$ 0,00</div></div>
+        <div class="stat"><div class="muted tiny">Reserva separada</div><div class="value" id="statReserva">R$ 0,00</div></div>
+      </div>
+    </section>
+
+    <section id="lancamentos" class="page">
+      <div class="card">
+        <div class="card-title">
+          <h3>Lançamento rápido</h3>
+          <span class="muted tiny" id="todayDate"></span>
+        </div>
+        <div class="field">
+          <label>Valor</label>
+          <input type="number" id="quickValue" placeholder="Ex: 12.50" step="0.01" />
+        </div>
+        <div class="action-grid">
+          <button class="big-btn pix" onclick="addFastDelivery('Pix')">+ Pix</button>
+          <button class="big-btn cash" onclick="addFastDelivery('Dinheiro')">+ Dinheiro</button>
+          <button class="big-btn warn" onclick="addFastDelivery('Ficha')">+ Ficha</button>
+          <button class="big-btn danger" onclick="addExpense()">+ Despesa</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Importar conversa do WhatsApp</h3>
+          <span class="muted tiny">cola e revisa antes</span>
+        </div>
+        <div class="field">
+          <label>Texto da conversa</label>
+          <textarea id="waText" placeholder="Exemplo:
+1-12p
+2-10
+3-8 f
+4-15 p"></textarea>
+        </div>
+        <div class="field">
+          <label>Tipo padrão para valor sem letra</label>
+          <select id="waDefaultType">
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">Pix</option>
+          </select>
+        </div>
+        <button class="big-btn blue" onclick="previewWhatsAppImport()">Pré-visualizar importação</button>
+        <div id="waPreview" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Resumo do dia</h3>
+          <div style="display:flex;gap:8px">
+            <button class="ghost-btn" onclick="pickOtherDay()">Abrir outro dia</button>
+            <button class="ghost-btn" onclick="goToday()">Hoje</button>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="summary-item"><div class="muted tiny">Bruto</div><div class="n" id="dayGross">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Despesas</div><div class="n negative" id="dayExpenses">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Líquido</div><div class="n" id="dayNet">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Entregas</div><div class="n" id="dayCount">0</div></div>
+          <div class="summary-item"><div class="muted tiny">Pendentes</div><div class="n warning" id="dayPending">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Separado no dia</div><div class="n" id="daySeparated">R$ 0,00</div></div>
+        </div>
+        <div class="small muted" style="margin-top:10px" id="selectedDayLabel"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Lançamentos do dia</h3>
+          <span class="muted tiny">edite ou confirme fichas</span>
+        </div>
+        <div id="entriesList" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Fechamentos</h3>
+          <span class="muted tiny">dia / semana / mês</span>
+        </div>
+        <div class="close-panel">
+          <div id="closeDayCard" class="close-card"></div>
+          <div id="closeWeekCard" class="close-card"></div>
+          <div id="closeMonthCard" class="close-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="historico" class="page">
+      <div class="card">
+        <div class="card-title">
+          <h3>Histórico</h3>
+          <span class="muted tiny">dias, semanas e meses</span>
+        </div>
+        <div class="pill-switch" style="margin-bottom:10px">
+          <button class="active" id="histDays" onclick="setHistoryMode('days', this)">Dias</button>
+          <button id="histWeeks" onclick="setHistoryMode('weeks', this)">Semanas</button>
+          <button id="histMonths" onclick="setHistoryMode('months', this)">Meses</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <section id="config" class="page">
+      <div class="card">
+        <div class="card-title">
+          <h3>Separação automática</h3>
+          <span class="muted tiny">por dia trabalhado</span>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>CRMV</label><input type="number" id="cfgCrmv" step="0.01"></div>
+          <div class="field"><label>Reserva</label><input type="number" id="cfgReserva" step="0.01"></div>
+          <div class="field"><label>Moto</label><input type="number" id="cfgMoto" step="0.01"></div>
+        </div>
+        <button class="big-btn blue" onclick="saveConfig()">Salvar separações</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Metas mensais</h3>
+          <span class="muted tiny">salvas por mês</span>
+        </div>
+        <div class="field"><label>Mês</label><input type="month" id="goalMonth"></div>
+        <div class="grid-3">
+          <div class="field"><label>Faturamento</label><input type="number" id="goalGross" step="0.01"></div>
+          <div class="field"><label>Líquido</label><input type="number" id="goalNet" step="0.01"></div>
+          <div class="field"><label>Entregas</label><input type="number" id="goalDeliveries" step="1"></div>
+        </div>
+        <button class="big-btn purple" onclick="saveMonthlyGoals()">Salvar metas do mês</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Resumo do plano</h3>
+          <span class="muted tiny">acumulado separado</span>
+        </div>
+        <div class="grid-3">
+          <div class="summary-item"><div class="muted tiny">CRMV separado</div><div class="n" id="cfgTotalCrmv">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Reserva separada</div><div class="n" id="cfgTotalReserva">R$ 0,00</div></div>
+          <div class="summary-item"><div class="muted tiny">Moto separada</div><div class="n" id="cfgTotalMoto">R$ 0,00</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>Ferramentas</h3>
+          <span class="muted tiny">backup e limpeza</span>
+        </div>
+        <div class="action-grid">
+          <button class="big-btn blue" onclick="exportBackup()">Exportar backup</button>
+          <button class="big-btn purple" onclick="importBackup()">Importar backup</button>
+          <button class="big-btn danger" onclick="resetAll()">Apagar tudo</button>
+          <button class="big-btn warn" onclick="forceAutoClose()">Rodar fechamento automático</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-inner">
+      <button class="nav-btn active" data-page="home" onclick="showPage('home')">Home</button>
+      <button class="nav-btn" data-page="lancamentos" onclick="showPage('lancamentos')">Lançar</button>
+      <button class="nav-btn" data-page="historico" onclick="showPage('historico')">Histórico</button>
+      <button class="nav-btn" data-page="config" onclick="showPage('config')">Config</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'motoboy-pro-v4';
+    let homeFilter = 'day';
+    let historyMode = 'days';
+    let currentDateKey = todayKey();
+    let chart = null;
+    let waPreviewCache = [];
+
+    function defaultState(){
+      return {
+        entries: [],
+        dayStatus: {},
+        weekStatus: {},
+        monthStatus: {},
+        config: {
+          crmv: 20,
+          reserva: 20,
+          moto: 22,
+          hideValues: false
+        },
+        goals: {}
+      };
+    }
+
+    let state = loadState();
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...defaultState(),
+          ...parsed,
+          config: { ...defaultState().config, ...(parsed.config || {}) }
+        };
+      }catch(e){
+        return defaultState();
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function money(v){
+      return Number(v || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    }
+
+    function todayKey(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function toDateBR(key){
+      const [y,m,d] = key.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function monthKey(dateKey){
+      return dateKey.slice(0,7);
+    }
+
+    function weekKey(dateKey){
+      const d = new Date(dateKey + 'T12:00:00');
+      const dayNum = d.getDay() || 7;
+      d.setDate(d.getDate() + 4 - dayNum);
+      const yearStart = new Date(d.getFullYear(),0,1);
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return `${d.getFullYear()}-W${String(weekNo).padStart(2,'0')}`;
+    }
+
+    function monthLabel(key){
+      const [y,m] = key.split('-');
+      const names = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      return `${names[Number(m)-1]} ${y}`;
+    }
+
+    function getEntriesByDate(dateKey){
+      return state.entries.filter(e => e.date === dateKey).sort((a,b) => a.createdAt - b.createdAt);
+    }
+
+    function getDaySummary(dateKey){
+      const entries = getEntriesByDate(dateKey);
+      const gross = entries.filter(e => e.kind === 'delivery').reduce((s,e)=>s+Number(e.value),0);
+      const expenses = entries.filter(e => e.kind === 'expense').reduce((s,e)=>s+Number(e.value),0);
+      const net = gross - expenses;
+      const pending = entries.filter(e => e.kind === 'delivery' && e.pending).reduce((s,e)=>s+Number(e.value),0);
+      const count = entries.filter(e => e.kind === 'delivery').length;
+      const worked = entries.length > 0;
+      const separated = worked ? (Number(state.config.crmv)+Number(state.config.reserva)+Number(state.config.moto)) : 0;
+      return { gross, expenses, net, pending, count, worked, separated, entries };
+    }
+
+    function getAllDates(){
+      return [...new Set(state.entries.map(e => e.date))].sort();
+    }
+
+    function getRangeSummary(type, key){
+      let dates = [];
+      const allDates = getAllDates();
+      if(type === 'week') dates = allDates.filter(d => weekKey(d) === key);
+      if(type === 'month') dates = allDates.filter(d => monthKey(d) === key);
+
+      const total = { gross:0, expenses:0, net:0, pending:0, count:0, separated:0, days:0 };
+      dates.forEach(d => {
+        const s = getDaySummary(d);
+        total.gross += s.gross;
+        total.expenses += s.expenses;
+        total.net += s.net;
+        total.pending += s.pending;
+        total.count += s.count;
+        total.separated += s.separated;
+        if(s.worked) total.days += 1;
+      });
+      return total;
+    }
+
+    function getCurrentWeekKey(){ return weekKey(currentDateKey); }
+    function getCurrentMonthKey(){ return monthKey(currentDateKey); }
+
+    function isDayClosed(dateKey){
+      return !!state.dayStatus[dateKey]?.closed;
+    }
+
+    function isWeekClosed(key){
+      return !!state.weekStatus[key]?.closed;
+    }
+
+    function isMonthClosed(key){
+      return !!state.monthStatus[key]?.closed;
+    }
+
+    function isDateLocked(dateKey){
+      return isDayClosed(dateKey) || isWeekClosed(weekKey(dateKey)) || isMonthClosed(monthKey(dateKey));
+    }
+
+    function makeId(){
+      return Date.now().toString(36) + Math.random().toString(36).slice(2,9);
+    }
+
+    function addEntry(entry){
+      if(isDateLocked(entry.date)){
+        alert('Esse período está fechado. Reabra o dia/semana/mês para editar.');
+        return false;
+      }
+      state.entries.push(entry);
+      saveState();
+      autoClosePastDays();
+      renderAll();
+      return true;
+    }
+
+    function addFastDelivery(type){
+      const input = document.getElementById('quickValue');
+      const raw = Number(input.value);
+      if(!raw || raw <= 0){
+        alert('Digite um valor válido.');
+        return;
+      }
+
+      const entry = {
+        id: makeId(),
+        date: currentDateKey,
+        kind: 'delivery',
+        paymentType: type === 'Ficha' ? 'Ficha' : type,
+        pending: type === 'Ficha',
+        value: raw,
+        note: '',
+        createdAt: Date.now()
+      };
+
+      if(addEntry(entry)){
+        input.value = '';
+      }
+    }
+
+    function addExpense(){
+      if(isDateLocked(currentDateKey)){
+        alert('Esse período está fechado. Reabra para editar.');
+        return;
+      }
+
+      const value = prompt('Valor da despesa:');
+      if(value === null) return;
+      const num = Number(String(value).replace(',','.'));
+      if(!num || num <= 0){
+        alert('Valor inválido.');
+        return;
+      }
+
+      const pay = prompt('Pagamento da despesa: Pix ou Dinheiro?', 'Pix') || 'Pix';
+      const note = prompt('Descrição da despesa (ex: almoço, combustível, óleo):', '') || '';
+
+      addEntry({
+        id: makeId(),
+        date: currentDateKey,
+        kind: 'expense',
+        paymentType: pay,
+        pending: false,
+        value: num,
+        note,
+        createdAt: Date.now()
+      });
+    }
+
+    function deleteEntry(id){
+      const item = state.entries.find(e => e.id === id);
+      if(!item) return;
+      if(isDateLocked(item.date)){
+        alert('Esse período está fechado. Reabra para editar.');
+        return;
+      }
+      if(!confirm('Excluir esse lançamento?')) return;
+      state.entries = state.entries.filter(e => e.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function confirmPending(id){
+      const item = state.entries.find(e => e.id === id);
+      if(!item) return;
+      if(isDateLocked(item.date)){
+        alert('Esse período está fechado. Reabra para editar.');
+        return;
+      }
+      item.pending = false;
+      item.paymentType = 'Pix';
+      saveState();
+      renderAll();
+    }
+
+    function editEntry(id){
+      const item = state.entries.find(e => e.id === id);
+      if(!item) return;
+      if(isDateLocked(item.date)){
+        alert('Esse período está fechado. Reabra para editar.');
+        return;
+      }
+
+      const newValue = prompt('Novo valor:', item.value);
+      if(newValue === null) return;
+      const num = Number(String(newValue).replace(',','.'));
+      if(!num || num <= 0){
+        alert('Valor inválido.');
+        return;
+      }
+
+      if(item.kind === 'delivery'){
+        const newType = prompt('Tipo: Pix, Dinheiro ou Ficha', item.pending ? 'Ficha' : item.paymentType) || item.paymentType;
+        item.paymentType = newType;
+        item.pending = String(newType).toLowerCase() === 'ficha';
+      }else{
+        const newType = prompt('Pagamento da despesa: Pix ou Dinheiro', item.paymentType) || item.paymentType;
+        item.paymentType = newType;
+        item.note = prompt('Descrição da despesa:', item.note || '') || '';
+      }
+
+      item.value = num;
+      saveState();
+      renderAll();
+    }
+
+    function previewWhatsAppImport(){
+      const txt = document.getElementById('waText').value.trim();
+      const defaultType = document.getElementById('waDefaultType').value;
+      const wrap = document.getElementById('waPreview');
+
+      if(!txt){
+        wrap.innerHTML = '<div class="empty">Cole alguma conversa primeiro.</div>';
+        return;
+      }
+
+      const lines = txt.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      const items = [];
+
+      for(const line of lines){
+        const m = line.match(/(\\d+)\\s*[-–]\\s*(\\d+[.,]?\\d*)\\s*([a-zA-Z]*)/);
+        if(!m) continue;
+
+        const number = m[1];
+        const value = Number(m[2].replace(',','.'));
+        let tag = (m[3] || '').toLowerCase();
+
+        let type = defaultType;
+        let pending = false;
+
+        if(tag.includes('p')) type = 'Pix';
+        if(tag.includes('f')){ type = 'Ficha'; pending = true; }
+
+        if(value > 0){
+          items.push({
+            id: makeId(),
+            date: currentDateKey,
+            kind: 'delivery',
+            paymentType: type,
+            pending,
+            value,
+            note: `Importado #${number}`,
+            createdAt: Date.now() + items.length
+          });
+        }
+      }
+
+      waPreviewCache = items;
+
+      if(!items.length){
+        wrap.innerHTML = '<div class="empty">Nenhum valor reconhecido. Use padrão tipo 1-12p, 2-10, 3-8 f.</div>';
+        return;
+      }
+
+      let html = '<div class="list">';
+      items.forEach((e,i)=>{
+        html += `
+          <div class="entry">
+            <div class="entry-top">
+              <div>
+                <div class="entry-title">Entrega ${i+1} - ${money(e.value)}</div>
+                <div class="entry-meta">
+                  <span class="badge ${e.pending ? 'b-pending' : (e.paymentType === 'Pix' ? 'b-pix' : 'b-cash')}">${e.paymentType}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div><button class="big-btn blue" style="margin-top:10px" onclick="confirmWhatsAppImport()">Importar tudo</button>';
+      wrap.innerHTML = html;
+    }
+
+    function confirmWhatsAppImport(){
+      if(!waPreviewCache.length){
+        alert('Nada para importar.');
+        return;
+      }
+
+      if(isDateLocked(currentDateKey)){
+        alert('Esse período está fechado. Reabra para editar.');
+        return;
+      }
+
+      waPreviewCache.forEach(item => state.entries.push(item));
+      waPreviewCache = [];
+      document.getElementById('waText').value = '';
+      document.getElementById('waPreview').innerHTML = '';
+      saveState();
+      renderAll();
+    }
+
+    function pickOtherDay(){
+      const chosen = prompt('Digite a data no formato AAAA-MM-DD', currentDateKey);
+      if(!chosen) return;
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(chosen)){
+        alert('Formato inválido.');
+        return;
+      }
+      currentDateKey = chosen;
+      renderAll();
+    }
+
+    function goToday(){
+      currentDateKey = todayKey();
+      renderAll();
+    }
+
+    function closeDay(dateKey){
+      state.dayStatus[dateKey] = { closed: true, closedAt: Date.now() };
+      saveState();
+      renderAll();
+    }
+
+    function reopenDay(dateKey){
+      delete state.dayStatus[dateKey];
+      saveState();
+      renderAll();
+    }
+
+    function closeWeek(key){
+      state.weekStatus[key] = { closed: true, closedAt: Date.now() };
+      saveState();
+      renderAll();
+    }
+
+    function reopenWeek(key){
+      delete state.weekStatus[key];
+      saveState();
+      renderAll();
+    }
+
+    function closeMonth(key){
+      state.monthStatus[key] = { closed: true, closedAt: Date.now() };
+      saveState();
+      renderAll();
+    }
+
+    function reopenMonth(key){
+      delete state.monthStatus[key];
+      saveState();
+      renderAll();
+    }
+
+    function autoClosePastDays(){
+      const today = todayKey();
+      const dates = getAllDates();
+      dates.forEach(d => {
+        if(d < today && !state.dayStatus[d]?.closed){
+          state.dayStatus[d] = { closed: true, closedAt: Date.now(), auto: true };
+        }
+      });
+      saveState();
+    }
+
+    function forceAutoClose(){
+      autoClosePastDays();
+      alert('Fechamento automático executado.');
+      renderAll();
+    }
+
+    function shouldShowWeekClose(dateKey){
+      const d = new Date(dateKey + 'T12:00:00');
+      return d.getDay() === 0;
+    }
+
+    function shouldShowMonthClose(dateKey){
+      const d = new Date(dateKey + 'T12:00:00');
+      const next = new Date(d);
+      next.setDate(d.getDate() + 1);
+      return next.getMonth() !== d.getMonth();
+    }
+
+    function showPage(page){
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+      syncTabs(page);
+      if(page === 'home') renderHome();
+      if(page === 'lancamentos') renderDay();
+      if(page === 'historico') renderHistory();
+      if(page === 'config') renderConfig();
+    }
+
+    function syncTabs(page){
+      document.querySelectorAll('.tab-btn,.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll(`[data-page="${page}"]`).forEach(btn => btn.classList.add('active'));
+    }
+
+    function setHomeFilter(filter, el){
+      homeFilter = filter;
+      document.querySelectorAll('.segment button').forEach(b => b.classList.remove('active'));
+      if(el) el.classList.add('active');
+      renderHome();
+    }
+
+    function setHistoryMode(mode, el){
+      historyMode = mode;
+      document.querySelectorAll('.pill-switch button').forEach(b => b.classList.remove('active'));
+      if(el) el.classList.add('active');
+      renderHistory();
+    }
+
+    function toggleHideValues(){
+      state.config.hideValues = !state.config.hideValues;
+      saveState();
+      renderHome();
+    }
+
+    function hideOrMoney(v){
+      return state.config.hideValues ? 'R$ ••••' : money(v);
+    }
+
+    function renderGoals(){
+      const key = getCurrentMonthKey();
+      const goals = state.goals[key] || { gross:0, net:0, deliveries:0 };
+      const monthSummary = getRangeSummary('month', key);
+      document.getElementById('homeMonthLabel').textContent = monthLabel(key);
+
+      const items = [
+        {
+          name:'Faturamento',
+          current: monthSummary.gross,
+          target: Number(goals.gross || 0),
+          formattedCurrent: hideOrMoney(monthSummary.gross),
+          formattedTarget: goals.gross ? money(goals.gross) : 'Sem meta'
+        },
+        {
+          name:'Líquido',
+          current: monthSummary.net,
+          target: Number(goals.net || 0),
+          formattedCurrent: hideOrMoney(monthSummary.net),
+          formattedTarget: goals.net ? money(goals.net) : 'Sem meta'
+        },
+        {
+          name:'Entregas',
+          current: monthSummary.count,
+          target: Number(goals.deliveries || 0),
+          formattedCurrent: state.config.hideValues ? '•••' : String(monthSummary.count),
+          formattedTarget: goals.deliveries ? String(goals.deliveries) : 'Sem meta'
+        }
+      ];
+
+      const wrap = document.getElementById('goalsWrap');
+      wrap.innerHTML = '';
+
+      items.forEach(item => {
+        const pct = item.target > 0 ? Math.min(100, (item.current / item.target) * 100) : 0;
+        const row = document.createElement('div');
+        row.innerHTML = `
+          <div class="goal-head">
+            <div class="goal-name">${item.name}</div>
+            <div class="goal-value">${item.formattedCurrent} / ${item.formattedTarget}</div>
+          </div>
+          <div class="bar"><span style="width:${pct}%"></span></div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    function renderHome(){
+      const label = document.getElementById('balanceLabel');
+      const gross = document.getElementById('balanceGross');
+      const expense = document.getElementById('balanceExpense');
+      const net = document.getElementById('balanceNet');
+      const hideBtn = document.getElementById('hideValuesBtn');
+
+      let data;
+      if(homeFilter === 'day'){
+        label.textContent = `Resumo do dia (${toDateBR(currentDateKey)})`;
+        data = getDaySummary(currentDateKey);
+        document.getElementById('chartLabel').textContent = 'Últimos 7 dias';
+      }else if(homeFilter === 'week'){
+        const wk = getCurrentWeekKey();
+        label.textContent = `Resumo da semana (${wk})`;
+        data = getRangeSummary('week', wk);
+        document.getElementById('chartLabel').textContent = 'Dias da semana';
+      }else{
+        const mk = getCurrentMonthKey();
+        label.textContent = `Resumo do mês (${monthLabel(mk)})`;
+        data = getRangeSummary('month', mk);
+        document.getElementById('chartLabel').textContent = 'Últimos meses';
+      }
+
+      gross.textContent = hideOrMoney(data.gross);
+      expense.textContent = hideOrMoney(data.expenses);
+      net.textContent = `Líquido ${hideOrMoney(data.net)}`;
+      net.className = 'net-pill ' + (data.net >= 0 ? 'net-positive' : 'net-negative');
+      hideBtn.textContent = state.config.hideValues ? 'Mostrar' : 'Ocultar';
+
+      document.getElementById('statDeliveries').textContent = state.config.hideValues ? '•••' : String(data.count || 0);
+      document.getElementById('statPending').textContent = hideOrMoney(data.pending || 0);
+
+      const totals = getSeparatedTotals();
+      document.getElementById('statMoto').textContent = hideOrMoney(totals.moto);
+      document.getElementById('statReserva').textContent = hideOrMoney(totals.reserva);
+
+      renderGoals();
+      renderChart();
+    }
+
+    function renderChart(){
+      const ctx = document.getElementById('mainChart');
+      if(chart) chart.destroy();
+
+      let labels = [];
+      let grossData = [];
+      let netData = [];
+      let expData = [];
+
+      if(homeFilter === 'day' || homeFilter === 'week'){
+        const all = getAllDates();
+        let dates = [];
+
+        if(homeFilter === 'day'){
+          dates = all.slice(-7);
+        }else{
+          const currentWeek = getCurrentWeekKey();
+          dates = all.filter(d => weekKey(d) === currentWeek);
+        }
+
+        labels = dates.map(d => homeFilter === 'day' ? d.slice(5) : d.slice(8));
+        grossData = dates.map(d => getDaySummary(d).gross);
+        netData = dates.map(d => getDaySummary(d).net);
+        expData = dates.map(d => getDaySummary(d).expenses);
+      }else{
+        const months = [...new Set(getAllDates().map(d => monthKey(d)))].sort().slice(-6);
+        labels = months.map(m => m.slice(5));
+        grossData = months.map(m => getRangeSummary('month', m).gross);
+        netData = months.map(m => getRangeSummary('month', m).net);
+        expData = months.map(m => getRangeSummary('month', m).expenses);
+      }
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label:'Bruto', data:grossData, tension:.35, borderWidth:3 },
+            { label:'Líquido', data:netData, tension:.35, borderWidth:3 },
+            { label:'Despesas', data:expData, tension:.35, borderWidth:3 }
+          ]
+        },
+        options: {
+          responsive:true,
+          plugins:{
+            legend:{ labels:{ color:'#dbe7ff' } }
+          },
+          scales:{
+            x:{ ticks:{ color:'#9fb0d1' }, grid:{ color:'rgba(255,255,255,.05)' } },
+            y:{ ticks:{ color:'#9fb0d1' }, grid:{ color:'rgba(255,255,255,.05)' } }
+          }
+        }
+      });
+    }
+
+    function renderDay(){
+      document.getElementById('todayDate').textContent = `Dia aberto: ${toDateBR(currentDateKey)}`;
+      document.getElementById('selectedDayLabel').textContent = `Data selecionada: ${toDateBR(currentDateKey)}`;
+
+      const s = getDaySummary(currentDateKey);
+      document.getElementById('dayGross').textContent = money(s.gross);
+      document.getElementById('dayExpenses').textContent = money(s.expenses);
+      document.getElementById('dayNet').textContent = money(s.net);
+      document.getElementById('dayCount').textContent = s.count;
+      document.getElementById('dayPending').textContent = money(s.pending);
+      document.getElementById('daySeparated').textContent = money(s.separated);
+
+      const wrap = document.getElementById('entriesList');
+      wrap.innerHTML = '';
+
+      if(!s.entries.length){
+        wrap.innerHTML = '<div class="empty">Nenhum lançamento nesse dia.</div>';
+      }else{
+        s.entries.forEach((e, idx) => {
+          const entry = document.createElement('div');
+          entry.className = 'entry';
+          const badgeClass = e.kind === 'expense'
+            ? 'b-expense'
+            : e.pending
+              ? 'b-pending'
+              : e.paymentType === 'Pix'
+                ? 'b-pix'
+                : 'b-cash';
+
+          entry.innerHTML = `
+            <div class="entry-top">
+              <div>
+                <div class="entry-title">
+                  ${e.kind === 'expense' ? 'Despesa' : 'Entrega #'+(idx+1)} - ${money(e.value)}
+                </div>
+                <div class="entry-meta">
+                  <span class="badge ${badgeClass}">${e.kind === 'expense' ? 'Despesa' : e.paymentType}</span>
+                  ${e.note ? `<span class="muted small">${e.note}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <div class="entry-actions">
+              ${e.kind === 'delivery' && e.pending ? `<button class="mini-btn mini-receive" onclick="confirmPending('${e.id}')">Recebido</button>` : ''}
+              <button class="mini-btn mini-edit" onclick="editEntry('${e.id}')">Editar</button>
+              <button class="mini-btn mini-delete" onclick="deleteEntry('${e.id}')">Excluir</button>
+            </div>
+          `;
+          wrap.appendChild(entry);
+        });
+      }
+
+      renderCloseCards();
+    }
+
+    function renderCloseCards(){
+      const dayCard = document.getElementById('closeDayCard');
+      const weekCard = document.getElementById('closeWeekCard');
+      const monthCard = document.getElementById('closeMonthCard');
+
+      const dClosed = isDayClosed(currentDateKey);
+      const wKey = getCurrentWeekKey();
+      const wClosed = isWeekClosed(wKey);
+      const mKey = getCurrentMonthKey();
+      const mClosed = isMonthClosed(mKey);
+
+      dayCard.className = 'close-card ' + (dClosed ? 'closed' : '');
+      dayCard.innerHTML = `
+        <div class="card-title">
+          <h3>Fechamento do dia</h3>
+          <span class="muted tiny">${toDateBR(currentDateKey)}</span>
+        </div>
+        <div class="small muted" style="margin-bottom:10px">${dClosed ? 'Dia fechado.' : 'Dia aberto.'}</div>
+        <button class="ghost-btn" onclick="${dClosed ? `reopenDay('${currentDateKey}')` : `closeDay('${currentDateKey}')`}">
+          ${dClosed ? 'Reabrir dia' : 'Fechar o dia'}
+        </button>
+      `;
+
+      const showWeek = shouldShowWeekClose(currentDateKey);
+      weekCard.className = 'close-card ' + (wClosed ? 'closed' : (!showWeek ? 'locked' : ''));
+      weekCard.innerHTML = `
+        <div class="card-title">
+          <h3>Fechamento da semana</h3>
+          <span class="muted tiny">${wKey}</span>
+        </div>
+        <div class="small muted" style="margin-bottom:10px">
+          ${showWeek ? (wClosed ? 'Semana fechada.' : 'Disponível hoje porque é domingo.') : 'Só aparece no domingo.'}
+        </div>
+        ${showWeek ? `<button class="ghost-btn" onclick="${wClosed ? `reopenWeek('${wKey}')` : `closeWeek('${wKey}')`}">${wClosed ? 'Reabrir semana' : 'Fechar a semana'}</button>` : ''}
+      `;
+
+      const showMonth = shouldShowMonthClose(currentDateKey);
+      monthCard.className = 'close-card ' + (mClosed ? 'closed' : (!showMonth ? 'locked' : ''));
+      monthCard.innerHTML = `
+        <div class="card-title">
+          <h3>Fechamento do mês</h3>
+          <span class="muted tiny">${monthLabel(mKey)}</span>
+        </div>
+        <div class="small muted" style="margin-bottom:10px">
+          ${showMonth ? (mClosed ? 'Mês fechado.' : 'Disponível no último dia do mês.') : 'Só aparece no último dia do mês.'}
+        </div>
+        ${showMonth ? `<button class="ghost-btn" onclick="${mClosed ? `reopenMonth('${mKey}')` : `closeMonth('${mKey}')`}">${mClosed ? 'Reabrir mês' : 'Fechar o mês'}</button>` : ''}
+      `;
+    }
+
+    function renderHistory(){
+      const wrap = document.getElementById('historyList');
+      wrap.innerHTML = '';
+
+      if(historyMode === 'days'){
+        const dates = getAllDates().reverse();
+        if(!dates.length){
+          wrap.innerHTML = '<div class="empty">Sem histórico ainda.</div>';
+          return;
+        }
+
+        dates.forEach(d => {
+          const s = getDaySummary(d);
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div class="history-head">
+              <div>
+                <strong>${toDateBR(d)}</strong>
+                <div class="tiny muted">${isDayClosed(d) ? 'Fechado' : 'Aberto'}</div>
+              </div>
+              <button class="ghost-btn" onclick="openHistoryDay('${d}')">Abrir</button>
+            </div>
+            <div class="history-values">
+              <div><div class="tiny muted">Bruto</div><strong>${money(s.gross)}</strong></div>
+              <div><div class="tiny muted">Despesas</div><strong>${money(s.expenses)}</strong></div>
+              <div><div class="tiny muted">Líquido</div><strong>${money(s.net)}</strong></div>
+              <div><div class="tiny muted">Entregas</div><strong>${s.count}</strong></div>
+            </div>
+          `;
+          wrap.appendChild(item);
+        });
+      }
+
+      if(historyMode === 'weeks'){
+        const weeks = [...new Set(getAllDates().map(d => weekKey(d)))].sort().reverse();
+        if(!weeks.length){
+          wrap.innerHTML = '<div class="empty">Sem semanas registradas ainda.</div>';
+          return;
+        }
+        weeks.forEach(w => {
+          const s = getRangeSummary('week', w);
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div class="history-head">
+              <div>
+                <strong>${w}</strong>
+                <div class="tiny muted">${isWeekClosed(w) ? 'Fechada' : 'Aberta'}</div>
+              </div>
+            </div>
+            <div class="history-values">
+              <div><div class="tiny muted">Bruto</div><strong>${money(s.gross)}</strong></div>
+              <div><div class="tiny muted">Despesas</div><strong>${money(s.expenses)}</strong></div>
+              <div><div class="tiny muted">Líquido</div><strong>${money(s.net)}</strong></div>
+              <div><div class="tiny muted">Entregas</div><strong>${s.count}</strong></div>
+            </div>
+          `;
+          wrap.appendChild(item);
+        });
+      }
+
+      if(historyMode === 'months'){
+        const months = [...new Set(getAllDates().map(d => monthKey(d)))].sort().reverse();
+        if(!months.length){
+          wrap.innerHTML = '<div class="empty">Sem meses registrados ainda.</div>';
+          return;
+        }
+        months.forEach(m => {
+          const s = getRangeSummary('month', m);
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div class="history-head">
+              <div>
+                <strong>${monthLabel(m)}</strong>
+                <div class="tiny muted">${isMonthClosed(m) ? 'Fechado' : 'Aberto'}</div>
+              </div>
+            </div>
+            <div class="history-values">
+              <div><div class="tiny muted">Bruto</div><strong>${money(s.gross)}</strong></div>
+              <div><div class="tiny muted">Despesas</div><strong>${money(s.expenses)}</strong></div>
+              <div><div class="tiny muted">Líquido</div><strong>${money(s.net)}</strong></div>
+              <div><div class="tiny muted">Entregas</div><strong>${s.count}</strong></div>
+            </div>
+          `;
+          wrap.appendChild(item);
+        });
+      }
+    }
+
+    function openHistoryDay(dateKey){
+      currentDateKey = dateKey;
+      showPage('lancamentos');
+    }
+
+    function saveConfig(){
+      state.config.crmv = Number(document.getElementById('cfgCrmv').value || 0);
+      state.config.reserva = Number(document.getElementById('cfgReserva').value || 0);
+      state.config.moto = Number(document.getElementById('cfgMoto').value || 0);
+      saveState();
+      alert('Separações salvas.');
+      renderAll();
+    }
+
+    function renderConfig(){
+      document.getElementById('cfgCrmv').value = state.config.crmv;
+      document.getElementById('cfgReserva').value = state.config.reserva;
+      document.getElementById('cfgMoto').value = state.config.moto;
+
+      const mk = getCurrentMonthKey();
+      const goal = state.goals[mk] || {};
+      document.getElementById('goalMonth').value = mk;
+      document.getElementById('goalGross').value = goal.gross || '';
+      document.getElementById('goalNet').value = goal.net || '';
+      document.getElementById('goalDeliveries').value = goal.deliveries || '';
+
+      const totals = getSeparatedTotals();
+      document.getElementById('cfgTotalCrmv').textContent = money(totals.crmv);
+      document.getElementById('cfgTotalReserva').textContent = money(totals.reserva);
+      document.getElementById('cfgTotalMoto').textContent = money(totals.moto);
+    }
+
+    function getSeparatedTotals(){
+      const workedDays = getAllDates().filter(d => getDaySummary(d).worked).length;
+      return {
+        crmv: workedDays * Number(state.config.crmv || 0),
+        reserva: workedDays * Number(state.config.reserva || 0),
+        moto: workedDays * Number(state.config.moto || 0)
+      };
+    }
+
+    function saveMonthlyGoals(){
+      const month = document.getElementById('goalMonth').value;
+      if(!month){
+        alert('Escolha um mês.');
+        return;
+      }
+
+      state.goals[month] = {
+        gross: Number(document.getElementById('goalGross').value || 0),
+        net: Number(document.getElementById('goalNet').value || 0),
+        deliveries: Number(document.getElementById('goalDeliveries').value || 0)
+      };
+      saveState();
+      alert('Metas salvas.');
+      renderAll();
+    }
+
+    function exportBackup(){
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'motoboy-pro-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBackup(){
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try{
+            const data = JSON.parse(reader.result);
+            state = {
+              ...defaultState(),
+              ...data,
+              config: { ...defaultState().config, ...(data.config || {}) }
+            };
+            saveState();
+            alert('Backup importado.');
+            renderAll();
+          }catch(err){
+            alert('Arquivo inválido.');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    function resetAll(){
+      if(!confirm('Apagar todos os dados do app?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = defaultState();
+      currentDateKey = todayKey();
+      renderAll();
+    }
+
+    function renderAll(){
+      autoClosePastDays();
+      renderHome();
+      renderDay();
+      renderHistory();
+      renderConfig();
+    }
+
+    function init(){
+      document.getElementById('goalMonth').value = getCurrentMonthKey();
+      renderAll();
+    }
+
+    init();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('Service Worker registrado'))
+          .catch(err => console.log('Erro ao registrar SW:', err));
+      });
+    }
+  </script>
+</body>
+</html>

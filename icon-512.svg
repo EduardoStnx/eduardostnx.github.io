@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0b1220"></rect>
+  <rect x="48" y="48" width="416" height="416" rx="88" fill="#111c31"></rect>
+  <path d="M154 320 L224 190 L256 260 L300 152 L358 320" fill="none" stroke="#22c55e" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path>
+  <circle cx="154" cy="320" r="18" fill="#22c55e"></circle>
+  <circle cx="358" cy="320" r="18" fill="#22c55e"></circle>
+  <text x="256" y="414" text-anchor="middle" font-size="76" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#eef4ff">MP</text>
+</svg>
